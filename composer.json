@@ -1,0 +1,13 @@
+{
+  "name": "jsonapi/core",
+  "version": "0.0.1",
+  "type": "library",
+  "require": {
+    "catfan/Medoo": "^1.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "JsonApi\\": "core"
+    }
+  }
+}
