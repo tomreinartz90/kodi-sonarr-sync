@@ -17,18 +17,24 @@ class KodiDB {
     /**
      * KodiDB constructor.
      */
-    public function __construct()
+    public function __construct($dbname, $dbServer, $dbUser, $dbPass)
     {
         $this->database = new Medoo([
             'database_type' => 'mysql',
-            'database_name' => 'name',
-            'server' => 'localhost',
-            'username' => 'your_username',
-            'password' => 'your_password'
+            'database_name' => $dbname,
+            'server' => $dbServer,
+            'username' => $dbUser,
+            'password' => $dbPass
         ]);
     }
 
-    function getRecentlyWatchedEpisodes(){
-        return $this->database->query("SELECT * FROM episode_view WHERE lastPlayed >= DATE_SUB(CURRENT_DATE(),INTERVAL 1 DAY) AND resumeTimeInSeconds == NULL");
+    function getRecentlyWatchedEpisodesPerSeries(){
+        $recentlyWatched = $this->database->query("SELECT strTitle, c12 as season, c13 as episode, idEpisode as id FROM episode_view WHERE lastPlayed >= DATE_SUB(CURRENT_DATE(),INTERVAL 1 DAY) and playCount > 0")->fetchAll();
+        $episodesPerSeries = array();
+        foreach($recentlyWatched as $key => $item)
+        {
+            $episodesPerSeries[$item['strTitle']][$item['id']] = $item;
+        }
+        return ksort($episodesPerSeries, SORT_NUMERIC);
     }
 }

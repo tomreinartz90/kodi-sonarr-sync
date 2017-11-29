@@ -1,5 +1,7 @@
 <?php
 
+require_once "RestApi.php";
+
 /**
  * Created by PhpStorm.
  * User: t.reinartz
@@ -13,24 +15,25 @@ class SonarrApi
     /**
      * SonarrApi constructor.
      */
-    public function __construct($sonarrUrl, $sonarrApi)
+    public function __construct($sonarrUrl, $apikey)
     {
         $this->sonarrUrl = $sonarrUrl;
-        $this->sonarrApi = $sonarrApi;
+        $this->apikey = $apikey;
+        $this->http = new RestApi();
     }
 
     function getEpisodesForSeries($seriesId)
     {
-        return http_get("$this->sonarrUrl/api/episode?apikey=$this->sonarrApi&seriesId=$seriesId");
+        return $this->http->get("$this->sonarrUrl/api/episode?apikey=$this->apikey&seriesId=$seriesId");
     }
 
     function updateEpisode($episodeId, $episode)
     {
-        return http_put_data("$this->sonarrUrl/api/episode/$episodeId?apikey=$this->sonarrApi", json_encode($episode));
+        return $this->http->put("$this->sonarrUrl/api/episode/$episodeId?apikey=$this->apikey", json_encode($episode));
     }
 
     function getSeries()
     {
-        return http_get("$this->sonarrUrl/api/series?apikey=$this->sonarrApi");
+        return $this->http->get("$this->sonarrUrl/api/series?apikey=$this->apikey");
     }
 }
