@@ -8,8 +8,8 @@
 include_once "KodiDB.php";
 include_once "SonarrApi.php";
 
-$kodi = new KodiDB('MyVideos107', 'thuis.tomreinartz.com','xbmc', 'xbmc');
-$sonarr = new SonarrApi('https://thuis.tomreinartz.com/sonarr', 'aa9838e7d4444602849061ca1a6bffa7');
+$kodi = new KodiDB('MyVideos107', '192.168.1.8','xbmc', 'xbmc');
+$sonarr = new SonarrApi('192.168.1.100', 'aa9838e7d4444602849061ca1a6bffa7');
 
 
 //group episodes per series
