@@ -14,7 +14,7 @@ use Medoo\Medoo;
 class KodiDB {
 
     private $database;
-    private $daysAgo = 5;
+    private $daysAgo = 500;
     /**
      * KodiDB constructor.
      */
@@ -30,7 +30,7 @@ class KodiDB {
     }
 
     function getRecentlyWatchedEpisodesPerSeries(){
-        $recentlyWatched = $this->database->query("SELECT series, c12 as season, c13 as episode, idEpisode as id FROM episode_view WHERE lastPlayed >= DATE_SUB(CURRENT_DATE(),INTERVAL $this->daysAgo DAY) and playCount > 0")->fetchAll();
+        $recentlyWatched = $this->database->query("SELECT  strTitle as series, c12 as season, c13 as episode, idEpisode as id FROM episode_view WHERE lastPlayed >= DATE_SUB(CURRENT_DATE(),INTERVAL $this->daysAgo DAY) and playCount > 0")->fetchAll();
 //        $recentlyWatched = $this->database->query("SELECT strTitle, c12 as season, c13 as episode, idEpisode as id FROM episode_view WHERE playCount > 0")->fetchAll();
         $episodesPerSeries = array();
         foreach($recentlyWatched as $key => $item)

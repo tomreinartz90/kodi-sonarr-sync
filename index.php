@@ -8,8 +8,8 @@
 include_once "KodiDB.php";
 include_once "SonarrApi.php";
 
-$kodi = new KodiDB('MyVideos107', '192.168.1.100', 'xbmc', 'xbmc');
-$sonarr = new SonarrApi('192.168.1.8', 'aa9838e7d4444602849061ca1a6bffa7');
+$kodi = new KodiDB('MyVideos107', '192.168.1.8', 'xbmc', 'xbmc');
+$sonarr = new SonarrApi('192.168.1.100:8989', 'aa9838e7d4444602849061ca1a6bffa7');
 
 //group episodes per series
 $series = $kodi->getRecentlyWatchedSeries();
@@ -34,26 +34,27 @@ if ($series != false && $sonarrSeries != false) {
     //run index per series
     foreach ($sonarrSeriesIds as $series => $seriesId) {
         echo "Running sync for Show: $series \n";
-        $markAsWatched = array();
+        $markAsUnMonitored = array();
         $episodes = $sonarr->getEpisodesForSeries($seriesId);
         $watchedEpisodes = $watchedEpisodesPerSeries[$series];
-
         //check sonarr episodes
         foreach ($episodes as $episode) {
-            //only check the watched episodes
-            if ($episode['watched'] === false) {
-                foreach ($watchedEpisodesPerSeries as $watchedEpisode) {
+            //only check the monitored episodes
+            if ($episode['monitored'] === true) {
+                foreach ($watchedEpisodes as $episodeId => $watchedEpisode) {
                     //add to markAsWatched when season and episodenumber match
-                    echo $episode;
-                    echo $watchedEpisode;
+                    if ($episode['seasonNumber'] == $watchedEpisode['season'] && $episode['episodeNumber'] == $watchedEpisode['episode']) {
+                        array_push($markAsUnMonitored, $episode);
+                    }
                 }
             }
         }
 
-        echo "Marking " . count($markAsWatched) . " Episodes as unWatched";
-        foreach ($markAsWatched as $episode) {
-            $episode['watched'] = false;
-            $sonarr->updateEpisode($episodes['episodeId'], $episode);
+        echo "Marking " . count($markAsUnMonitored) . " Episodes as unWatched \n";
+        foreach ($markAsUnMonitored as $episode) {
+            $episode['monitored'] = false;
+            $sonarr->updateEpisode($episode['id'], $episode);
+            echo "Season " . $episode['seasonNumber'] . ", Episode " . $episode['episodeNumber'] . "\n";
         }
     }
 
