@@ -8,18 +8,55 @@
 include_once "KodiDB.php";
 include_once "SonarrApi.php";
 
-$kodi = new KodiDB('MyVideos107', '192.168.1.8','xbmc', 'xbmc');
-$sonarr = new SonarrApi('192.168.1.100', 'aa9838e7d4444602849061ca1a6bffa7');
-
+$kodi = new KodiDB('MyVideos107', '192.168.1.100', 'xbmc', 'xbmc');
+$sonarr = new SonarrApi('192.168.1.8', 'aa9838e7d4444602849061ca1a6bffa7');
 
 //group episodes per series
-$episodesPerSeries = $kodi->getRecentlyWatchedEpisodesPerSeries();
-
-//loop over watched episodes
-//print_r($episodesPerSeries);
+$series = $kodi->getRecentlyWatchedSeries();
 $sonarrSeries = $sonarr->getSeries();
-var_dump($sonarrSeries);
-//foreach ($sonarrSeries as $series) {
-//print_r($series);
+if ($series != false && $sonarrSeries != false) {
+    $watchedEpisodesPerSeries = $kodi->getRecentlyWatchedEpisodesPerSeries();
 
-//}
+    echo("Starting sync for: " . json_encode($series));
+    //get the seriesIds
+    $sonarrSeriesIds = array();
+    foreach ($series as $show) {
+        $foundShow = null;
+        echo $show;
+        foreach ($sonarrSeries as $sonarrShow) {
+            if ($show == $sonarrShow['title']) {
+                $sonarrSeriesIds[$show] = $sonarrShow['id'];
+            }
+        }
+    }
+
+
+    //run index per series
+    foreach ($sonarrSeriesIds as $series => $seriesId) {
+        echo "Running sync for Show: $series \n";
+        $markAsWatched = array();
+        $episodes = $sonarr->getEpisodesForSeries($seriesId);
+        $watchedEpisodes = $watchedEpisodesPerSeries[$series];
+
+        //check sonarr episodes
+        foreach ($episodes as $episode) {
+            //only check the watched episodes
+            if ($episode['watched'] === false) {
+                foreach ($watchedEpisodesPerSeries as $watchedEpisode) {
+                    //add to markAsWatched when season and episodenumber match
+                    echo $episode;
+                    echo $watchedEpisode;
+                }
+            }
+        }
+
+        echo "Marking " . count($markAsWatched) . " Episodes as unWatched";
+        foreach ($markAsWatched as $episode) {
+            $episode['watched'] = false;
+            $sonarr->updateEpisode($episodes['episodeId'], $episode);
+        }
+    }
+
+} else {
+    echo "No need to sync episodes\n";
+}

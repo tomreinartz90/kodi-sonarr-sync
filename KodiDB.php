@@ -14,6 +14,7 @@ use Medoo\Medoo;
 class KodiDB {
 
     private $database;
+    private $daysAgo = 5;
     /**
      * KodiDB constructor.
      */
@@ -29,12 +30,22 @@ class KodiDB {
     }
 
     function getRecentlyWatchedEpisodesPerSeries(){
-        $recentlyWatched = $this->database->query("SELECT strTitle, c12 as season, c13 as episode, idEpisode as id FROM episode_view WHERE lastPlayed >= DATE_SUB(CURRENT_DATE(),INTERVAL 1 DAY) and playCount > 0")->fetchAll();
+        $recentlyWatched = $this->database->query("SELECT series, c12 as season, c13 as episode, idEpisode as id FROM episode_view WHERE lastPlayed >= DATE_SUB(CURRENT_DATE(),INTERVAL $this->daysAgo DAY) and playCount > 0")->fetchAll();
+//        $recentlyWatched = $this->database->query("SELECT strTitle, c12 as season, c13 as episode, idEpisode as id FROM episode_view WHERE playCount > 0")->fetchAll();
         $episodesPerSeries = array();
         foreach($recentlyWatched as $key => $item)
         {
-            $episodesPerSeries[$item['strTitle']][$item['id']] = $item;
+            $episodesPerSeries[$item['series']][$item['id']] = $item;
         }
-        return ksort($episodesPerSeries, SORT_NUMERIC);
+        return $episodesPerSeries;
+    }
+
+    function getRecentlyWatchedSeries(){
+        $mappedSeries = array();
+        $series = $this->database->query("SELECT DISTINCT(strTitle) as series FROM episode_view WHERE lastPlayed >= DATE_SUB(CURRENT_DATE(),INTERVAL $this->daysAgo DAY) and playCount > 0")->fetchAll();
+        foreach ($series as $item) {
+            array_push($mappedSeries, $item['series']);
+        }
+        return $mappedSeries;
     }
 }

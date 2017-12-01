@@ -24,7 +24,7 @@ class SonarrApi
 
     function getEpisodesForSeries($seriesId)
     {
-        return $this->http->get("$this->sonarrUrl/api/episode?apikey=$this->apikey&seriesId=$seriesId");
+        return json_decode($this->http->get("$this->sonarrUrl/api/episode?apikey=$this->apikey&seriesId=$seriesId"), true);
     }
 
     function updateEpisode($episodeId, $episode)
@@ -34,6 +34,6 @@ class SonarrApi
 
     function getSeries()
     {
-        return $this->http->get("$this->sonarrUrl/api/series?apikey=$this->apikey");
+        return json_decode($this->http->get("$this->sonarrUrl/api/series?apikey=$this->apikey"), true);
     }
 }
